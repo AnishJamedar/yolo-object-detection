@@ -3,11 +3,11 @@ import os
 from werkzeug.utils import secure_filename
 import cv2
 import numpy as np
-from ultralytics import YOLO
 import torch
 import gc
 import traceback
 import sys
+from ultralytics import YOLO
 
 app = Flask(__name__)
 
@@ -25,14 +25,14 @@ def allowed_file(filename):
 
 def download_model_if_needed():
     try:
-        model_path = '/tmp/yolov8n.pt' if os.environ.get('VERCEL') else 'yolov8n.pt'
+        model_path = '/tmp/yolov5s.pt' if os.environ.get('VERCEL') else 'yolov5s.pt'
         if not os.path.exists(model_path):
-            print("Downloading YOLOv8 model...")
+            print("Downloading YOLOv5 model...")
             # Clear memory before downloading
             gc.collect()
             torch.cuda.empty_cache()
             # Use a smaller model for Vercel
-            model = YOLO('yolov8n.pt' if not os.environ.get('VERCEL') else 'yolov8n.pt')
+            model = YOLO('yolov5s.pt' if not os.environ.get('VERCEL') else 'yolov5s.pt')
             print("Model downloaded successfully!")
         else:
             print("Model already exists, skipping download.")
@@ -78,7 +78,7 @@ def upload_file():
             
             # Process image with YOLO
             print("Loading YOLO model...")
-            model_path = '/tmp/yolov8n.pt' if os.environ.get('VERCEL') else 'yolov8n.pt'
+            model_path = '/tmp/yolov5s.pt' if os.environ.get('VERCEL') else 'yolov5s.pt'
             # Clear memory before loading model
             gc.collect()
             torch.cuda.empty_cache()
