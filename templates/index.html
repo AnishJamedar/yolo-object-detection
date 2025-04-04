@@ -24,6 +24,15 @@
         .nav-link {
             color: #0d6efd;
         }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
     </style>
 </head>
 <body>
@@ -62,6 +71,13 @@
                     </div>
                 </div>
 
+                <div id="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Processing image...</p>
+                </div>
+
                 <div class="image-container" id="resultContainer" style="display: none;">
                     <h3>Original Image</h3>
                     <img id="originalImage" src="" alt="Original Image">
@@ -69,7 +85,7 @@
                     <img id="processedImage" src="" alt="Processed Image">
                     <div class="detection-info">
                         <h4>Detected Objects:</h4>
-                        <ul id="detectionList"></ul>
+                        <ul id="detectionList" class="list-group"></ul>
                     </div>
                 </div>
             </div>
@@ -91,7 +107,7 @@
 
             // Show loading state
             document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'none';
             
             const formData = new FormData();
             formData.append('file', file);
@@ -99,10 +115,7 @@
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    body: formData
                 });
 
                 if (!response.ok) {
@@ -135,7 +148,7 @@
 
                 // Show results
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('results').style.display = 'block';
+                document.getElementById('resultContainer').style.display = 'block';
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error uploading image: ' + error.message);
