@@ -78,39 +78,68 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const formData = new FormData();
             const fileInput = document.getElementById('imageUpload');
-            formData.append('file', fileInput.files[0]);
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('file', file);
 
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 });
-                
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to upload image');
+                }
+
                 const data = await response.json();
                 
-                if (data.success) {
-                    document.getElementById('resultContainer').style.display = 'block';
-                    document.getElementById('originalImage').src = data.original_image;
-                    document.getElementById('processedImage').src = data.processed_image;
-                    
-                    const detectionList = document.getElementById('detectionList');
-                    detectionList.innerHTML = '';
-                    
-                    data.detections.forEach(detection => {
-                        const li = document.createElement('li');
-                        li.textContent = `${detection.class} (${(detection.confidence * 100).toFixed(2)}% confidence)`;
-                        detectionList.appendChild(li);
-                    });
-                } else {
-                    alert('Error: ' + data.error);
+                if (data.error) {
+                    throw new Error(data.error);
                 }
+
+                // Display results
+                document.getElementById('originalImage').src = `/static/uploads/${data.original_image}`;
+                document.getElementById('processedImage').src = `/static/uploads/${data.processed_image}`;
+                
+                // Display detections
+                const detectionsList = document.getElementById('detectionList');
+                detectionsList.innerHTML = '';
+                data.detections.forEach(detection => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.innerHTML = `
+                        <strong>${detection.class}</strong>
+                        <span class="float-end">Confidence: ${(detection.confidence * 100).toFixed(2)}%</span>
+                    `;
+                    detectionsList.appendChild(li);
+                });
+
+                // Show results
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
             } catch (error) {
-                alert('Error uploading image: ' + error);
+                console.error('Error:', error);
+                alert('Error uploading image: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
             }
         });
     </script>
