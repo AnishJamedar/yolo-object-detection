@@ -7,6 +7,7 @@ from ultralytics import YOLO
 import torch
 import gc
 import traceback
+import sys
 
 app = Flask(__name__)
 
@@ -23,17 +24,22 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def download_model_if_needed():
-    model_path = '/tmp/yolov8n.pt' if os.environ.get('VERCEL') else 'yolov8n.pt'
-    if not os.path.exists(model_path):
-        print("Downloading YOLOv8 model...")
-        # Clear memory before downloading
-        gc.collect()
-        torch.cuda.empty_cache()
-        # Use a smaller model for Vercel
-        model = YOLO('yolov8n.pt' if not os.environ.get('VERCEL') else 'yolov8n.pt')
-        print("Model downloaded successfully!")
-    else:
-        print("Model already exists, skipping download.")
+    try:
+        model_path = '/tmp/yolov8n.pt' if os.environ.get('VERCEL') else 'yolov8n.pt'
+        if not os.path.exists(model_path):
+            print("Downloading YOLOv8 model...")
+            # Clear memory before downloading
+            gc.collect()
+            torch.cuda.empty_cache()
+            # Use a smaller model for Vercel
+            model = YOLO('yolov8n.pt' if not os.environ.get('VERCEL') else 'yolov8n.pt')
+            print("Model downloaded successfully!")
+        else:
+            print("Model already exists, skipping download.")
+    except Exception as e:
+        print(f"Error downloading model: {str(e)}")
+        print(traceback.format_exc())
+        raise
 
 @app.route('/')
 def index():

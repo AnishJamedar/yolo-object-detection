@@ -127,7 +127,8 @@
                 console.log('Raw response:', responseText);
 
                 if (!responseText) {
-                    throw new Error('Empty response from server');
+                    console.error('Empty response from server');
+                    throw new Error('Server returned an empty response. Please try again.');
                 }
 
                 // Try to parse the response as JSON
@@ -138,7 +139,7 @@
                 } catch (parseError) {
                     console.error('JSON Parse Error:', parseError);
                     console.error('Response text that failed to parse:', responseText);
-                    throw new Error('Invalid server response format');
+                    throw new Error('Invalid server response format. Please try again.');
                 }
 
                 if (!response.ok) {
