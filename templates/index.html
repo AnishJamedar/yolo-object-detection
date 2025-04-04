@@ -120,18 +120,24 @@
                 });
 
                 console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
                 // Get the raw response text first
                 const responseText = await response.text();
                 console.log('Raw response:', responseText);
 
+                if (!responseText) {
+                    throw new Error('Empty response from server');
+                }
+
                 // Try to parse the response as JSON
                 let data;
                 try {
                     data = JSON.parse(responseText);
+                    console.log('Parsed JSON data:', data);
                 } catch (parseError) {
                     console.error('JSON Parse Error:', parseError);
+                    console.error('Response text that failed to parse:', responseText);
                     throw new Error('Invalid server response format');
                 }
 
@@ -143,6 +149,10 @@
                     throw new Error(data.error);
                 }
 
+                if (!data.original_image || !data.processed_image) {
+                    throw new Error('Invalid response format: missing image data');
+                }
+
                 // Display results
                 document.getElementById('originalImage').src = `/static/uploads/${data.original_image}`;
                 document.getElementById('processedImage').src = `/static/uploads/${data.processed_image}`;
@@ -150,21 +160,24 @@
                 // Display detections
                 const detectionsList = document.getElementById('detectionList');
                 detectionsList.innerHTML = '';
-                data.detections.forEach(detection => {
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item';
-                    li.innerHTML = `
-                        <strong>${detection.class}</strong>
-                        <span class="float-end">Confidence: ${(detection.confidence * 100).toFixed(2)}%</span>
-                    `;
-                    detectionsList.appendChild(li);
-                });
+                if (data.detections && Array.isArray(data.detections)) {
+                    data.detections.forEach(detection => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `
+                            <strong>${detection.class}</strong>
+                            <span class="float-end">Confidence: ${(detection.confidence * 100).toFixed(2)}%</span>
+                        `;
+                        detectionsList.appendChild(li);
+                    });
+                }
 
                 // Show results
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('resultContainer').style.display = 'block';
             } catch (error) {
                 console.error('Error:', error);
+                console.error('Error stack:', error.stack);
                 alert('Error uploading image: ' + error.message);
                 document.getElementById('loading').style.display = 'none';
             }

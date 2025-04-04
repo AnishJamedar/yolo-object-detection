@@ -50,33 +50,42 @@ def uploaded_file(filename):
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:
+        print("Received upload request")
         if 'file' not in request.files:
+            print("No file part in request")
             return jsonify({'error': 'No file part'}), 400
         
         file = request.files['file']
         if file.filename == '':
+            print("No selected file")
             return jsonify({'error': 'No selected file'}), 400
         
         if file and allowed_file(file.filename):
+            print(f"Processing file: {file.filename}")
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             
             # Download model if needed
+            print("Checking model...")
             download_model_if_needed()
             
             # Process image with YOLO
+            print("Loading YOLO model...")
             model_path = '/tmp/yolov8n.pt' if os.environ.get('VERCEL') else 'yolov8n.pt'
             # Clear memory before loading model
             gc.collect()
             torch.cuda.empty_cache()
             model = YOLO(model_path)
+            
+            print("Running inference...")
             results = model(filepath)
             
             # Get the first result
             result = results[0]
             
             # Draw bounding boxes
+            print("Processing image...")
             img = cv2.imread(filepath)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             
@@ -102,6 +111,7 @@ def upload_file():
                 })
             
             # Save processed image
+            print("Saving processed image...")
             processed_filename = f'processed_{filename}'
             processed_filepath = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
             cv2.imwrite(processed_filepath, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
@@ -118,11 +128,14 @@ def upload_file():
                 'detections': detections
             }
             
+            print("Sending response:", response_data)
             return jsonify(response_data)
         
+        print("Invalid file type")
         return jsonify({'error': 'Invalid file type'}), 400
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error in upload_file: {str(e)}")
+        print("Traceback:")
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
