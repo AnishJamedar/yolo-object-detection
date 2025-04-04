@@ -111,12 +111,14 @@ def upload_file():
             gc.collect()
             torch.cuda.empty_cache()
             
-            return jsonify({
+            response_data = {
                 'success': True,
                 'original_image': filename,
                 'processed_image': processed_filename,
                 'detections': detections
-            })
+            }
+            
+            return jsonify(response_data)
         
         return jsonify({'error': 'Invalid file type'}), 400
     except Exception as e:
