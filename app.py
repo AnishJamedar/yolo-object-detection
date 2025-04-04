@@ -20,22 +20,27 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Configure allowed extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
+# Global variable to store the model
+model = None
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def download_model_if_needed():
+    global model
     try:
-        model_path = '/tmp/yolov5s.pt' if os.environ.get('VERCEL') else 'yolov5s.pt'
+        model_path = '/tmp/yolov5n.pt' if os.environ.get('VERCEL') else 'yolov5n.pt'
         if not os.path.exists(model_path):
             print("Downloading YOLOv5 model...")
             # Clear memory before downloading
             gc.collect()
             torch.cuda.empty_cache()
             # Use a smaller model for Vercel
-            model = YOLO('yolov5s.pt' if not os.environ.get('VERCEL') else 'yolov5s.pt')
+            model = YOLO('yolov5n.pt' if not os.environ.get('VERCEL') else 'yolov5n.pt')
             print("Model downloaded successfully!")
         else:
             print("Model already exists, skipping download.")
+            model = YOLO(model_path)
     except Exception as e:
         print(f"Error downloading model: {str(e)}")
         print(traceback.format_exc())
@@ -72,18 +77,13 @@ def upload_file():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             
-            # Download model if needed
-            print("Checking model...")
-            download_model_if_needed()
+            # Use the global model
+            global model
+            if model is None:
+                print("Model not loaded, downloading...")
+                download_model_if_needed()
             
             # Process image with YOLO
-            print("Loading YOLO model...")
-            model_path = '/tmp/yolov5s.pt' if os.environ.get('VERCEL') else 'yolov5s.pt'
-            # Clear memory before loading model
-            gc.collect()
-            torch.cuda.empty_cache()
-            model = YOLO(model_path)
-            
             print("Running inference...")
             results = model(filepath)
             
@@ -123,7 +123,6 @@ def upload_file():
             cv2.imwrite(processed_filepath, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
             
             # Clear memory after processing
-            del model
             gc.collect()
             torch.cuda.empty_cache()
             
