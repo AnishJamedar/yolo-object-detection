@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python",
+      "config": {
+        "pythonVersion": "3.12",
+        "installCommand": "pip install --no-cache-dir -r requirements.txt",
+        "maxMemory": 3000,
+        "maxDuration": 60,
+        "memory": 3000,
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": ".",
+    "PYTHON_VERSION": "3.12.9",
+    "VERCEL_BUILD_SYSTEM_REPORT": "1",
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONOPTIMIZE": "2"
+  }
+}

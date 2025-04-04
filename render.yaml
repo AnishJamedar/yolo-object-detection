@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: yolo-object-detection
+    env: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.9
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: PYTHONDONTWRITEBYTECODE
+        value: 1
+    disk:
+      name: yolo-models
+      mountPath: /opt/render/project/src
+      sizeGB: 1 

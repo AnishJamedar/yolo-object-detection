@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How YOLO Works</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .tech-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .nav-link {
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">YOLO Object Detection</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/how-it-works">How It Works</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">How YOLO Object Detection Works</h1>
+
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="tech-details">
+                    <h2>Technical Overview</h2>
+                    <p>This application uses YOLOv8 (You Only Look Once) for real-time object detection. Here's how it works:</p>
+
+                    <h3>1. YOLO Architecture</h3>
+                    <p>YOLO divides the image into a grid and predicts bounding boxes and probabilities for each grid cell:</p>
+                    <ul>
+                        <li>Grid-based detection system</li>
+                        <li>Single forward pass through the network</li>
+                        <li>Predicts bounding boxes and class probabilities</li>
+                    </ul>
+
+                    <h3>2. Model Output Structure</h3>
+                    <p>For each detection, YOLO provides:</p>
+                    <div class="code-block">
+                        {
+                            'xyxy': [x1, y1, x2, y2],  # Bounding box coordinates
+                            'conf': 0.95,              # Confidence score
+                            'cls': 0                   # Class ID
+                        }
+                    </div>
+
+                    <h3>3. Image Processing Pipeline</h3>
+                    <p>The application follows these steps:</p>
+                    <ol>
+                        <li>Image upload and preprocessing</li>
+                        <li>YOLO model inference</li>
+                        <li>Bounding box drawing with OpenCV</li>
+                        <li>Results display</li>
+                    </ol>
+
+                    <h3>4. Technical Stack</h3>
+                    <ul>
+                        <li><strong>Backend:</strong> Flask, Python</li>
+                        <li><strong>Object Detection:</strong> YOLOv8</li>
+                        <li><strong>Image Processing:</strong> OpenCV</li>
+                        <li><strong>Frontend:</strong> HTML, CSS, JavaScript, Bootstrap</li>
+                    </ul>
+
+                    <h3>5. Code Implementation</h3>
+                    <p>Key parts of the implementation:</p>
+                    <div class="code-block">
+                        # Load YOLO model
+                        model = YOLO('yolov8n.pt')
+                        
+                        # Process image
+                        results = model(img)
+                        result = results[0]
+                        
+                        # Draw detections
+                        for box in result.boxes:
+                            x1, y1, x2, y2 = box.xyxy[0]
+                            conf = box.conf[0]
+                            cls = box.cls[0]
+                    </div>
+
+                    <h3>6. Performance</h3>
+                    <p>YOLOv8 provides:</p>
+                    <ul>
+                        <li>Real-time object detection</li>
+                        <li>High accuracy across 80 object classes</li>
+                        <li>Efficient processing on CPU/GPU</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
